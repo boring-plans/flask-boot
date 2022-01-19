@@ -1,3 +1,3 @@
 # flask-boot
 
-This is a backend scaffold based on flask, sqlalchemy(flask-sqlalchemy).
+This is a backend scaffold based on flask & sqlalchemy(flask-sqlalchemy).

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-by kang1.tao,
-on 2021/6/11.
+Created by Kang Tao at 2022/1/12 5:05 PM
 """
-import os
 from pathlib import Path
-__all__ = [p.stem for p in Path(os.path.dirname(os.path.abspath(__file__))).glob('[!_]*.py')]
+__all__ = [p.stem for p in Path(__file__).parent.glob('[!_]*.py')]
 

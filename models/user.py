@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Table user.
+Model User
 
-by kang1.tao,
-on 2021/6/11.
+Created by Kang Tao at 2022/1/12 5:04 PM
 """
-from models import user_role
 from context import use_db
-from flask import jsonify
+from models.user_role import user_role
 
 db = use_db()
 
@@ -17,11 +15,12 @@ class User(db.Model):
     username = db.Column(db.String(40))
     password = db.Column(db.String(40))
     salt = db.Column(db.String(64))
-    roles = db.relationship('Role', secondary=user_role, lazy='subquery', backref=db.backref('users', lazy=True))
+    is_admin = db.Column(db.Boolean)
+    roles = db.relationship('Role', secondary=user_role, backref=db.backref('users'))
 
     def to_vo(self):
-        return jsonify({
-            'id': self.id,
-            'username': self.username,
-            'roles': self.roles
-        })
+        from utils.repository import mo_to_vo
+        vo = mo_to_vo(self)
+        vo.pop('is_admin')
+        vo['roles'] = [role.to_vo() for role in self.roles]
+        return vo

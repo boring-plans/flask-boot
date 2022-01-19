@@ -1,28 +1,49 @@
 # -*- coding: utf-8 -*-
 """
-API associated with authorization and authentication.
+Auth related APIs
 
-by kang1.tao,
-on 2021/6/10.
+Created by Kang Tao at 2022/1/12 5:05 PM
 """
-from flask import request, Blueprint, Response
-from utils.response import positive, negative
+from flask import request, Blueprint
+from utils.response import make_response
 from context import use_app
-from services import user
+from services import auth as auth_service
 
-auth_blueprint = Blueprint('auth', __name__, url_prefix='/auth')
-app = use_app()
-app.register_blueprint(auth_blueprint)
+blueprint = Blueprint('auth', __name__, url_prefix='/auth')
 
 
-@auth_blueprint.route('/token', methods=['GET'])
-def get_token() -> Response:
-    """Signing-in is actually to fetch a token in REST-ful concept
-    :return: so return a token
+@blueprint.route('/token', methods=['GET'])
+def get_token():
+    """Signing-in is actually to fetch a token in REST-ful concept,
+    So return a token
     """
     username, password = request.args['username'], request.args['password']
-    res = user.sign_in(username, password)
-    if type(res) == str:
-        return negative(res)
-    else:
-        return positive(res)
+    captcha, captcha_key = request.args['captcha'], request.args['captchaKey']
+    code, res = auth_service.sign_in(username, password, captcha_key, captcha)
+    return make_response(res, code)
+
+
+@blueprint.route('/captcha', methods=['GET'])
+def get_captcha():
+    """Get a captcha with a random key"""
+    captcha_key = request.args['captchaKey']
+    return make_response(auth_service.get_captcha(captcha_key))
+
+
+@blueprint.route('/user', methods=['POST'])
+def register_user():
+    """Register one user"""
+    params = request.get_json()
+    username, password = params['username'], params['password']
+    captcha, captcha_key = params['captcha'], params['captchaKey']
+    code, res = auth_service.sign_up(username, password, captcha_key, captcha)
+    return make_response(res, code), 201 if code == 0 else 200
+
+
+@blueprint.route('/permissions', methods=['GET'])
+def get_permissions():
+    """Get all accessible menus and permissions"""
+    return make_response(auth_service.get_all_permissions())
+
+
+use_app().register_blueprint(blueprint)

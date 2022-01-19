@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-by kang1.tao,
-on 2021/6/11.
+User <-> Role
+
+Created by Kang Tao at 2022/1/17 6:27 PM
 """
 from context import use_db
 
 db = use_db()
 
 
-class UserRole(db.Model):
-    __tablename__ = 'user_role'
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), primary_key=True)
+user_role = db.Table(
+    'user_role',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
+)
