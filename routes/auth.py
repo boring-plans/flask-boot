@@ -14,7 +14,7 @@ blueprint = Blueprint('auth', __name__, url_prefix='/auth')
 
 @blueprint.route('/token', methods=['GET'])
 def get_token():
-    """Signing-in is actually to fetch a token in REST-ful concept,
+    """Signing-in is actually to fetch a token, in RESTful concept,
     So return a token
     """
     username, password = request.args['username'], request.args['password']

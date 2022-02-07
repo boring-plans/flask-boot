@@ -13,7 +13,6 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(40))
     description = db.Column(db.String(128))
-    menus = db.Column(db.String(1024))
     permissions = db.Column(db.String(1024))
 
     def to_vo(self):

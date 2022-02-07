@@ -30,29 +30,28 @@ def sign_in(username, password, captcha_key, captcha):
     if valid:
         user = User.query.filter_by(username=username).first()
         if user:
-            if gen_password(password, user.salt) != user.password:
-                return 1, 'Wrong password'
+            if user.status:
+                if gen_password(password, user.salt) == user.password:
+                    return 0, gen_jwt({'id': user.id})
+                else:
+                    return 1, 'Wrong password'
             else:
-                return 0, gen_jwt({'id': user.id})
+                return 2, 'User has been frozen'
         else:
-            return 2, 'User not found'
+            return 3, 'User not found'
     else:
-        return 3, 'Wrong captcha'
+        return 4, 'Wrong captcha'
 
 
 def get_all_permissions():
     """Get all permissions that current user owns"""
     user = User.query.get(g.current_user['id'])
-    permissions = {'menus': [], 'permissions': []}
+    permissions = []
     if user:
         if user.is_admin:
-            permissions = {'menus': 'ALL', 'permissions': 'ALL'}
+            permissions = 'ALL'
         else:
-            permissions = reduce(
-                lambda pre, curr: {
-                    'menus': [*{*curr.menus.split(','), *pre["menus"]}],
-                    'permissions': [*{*curr.menus.split(','), *pre["permissions"]}]
-                }, user.roles, permissions)
+            permissions = reduce(lambda pre, curr: [*pre, *curr.permissions.split(',')], user.roles, [])
 
     return permissions
 
@@ -60,7 +59,7 @@ def get_all_permissions():
 def get_captcha(random_key):
     """Get a random captcha with a random key"""
     captcha_str, captcha = gen_captcha()
-    set_redis_value(f'captcha-key-{random_key}', captcha_str)
+    set_redis_value(f'captcha-key-{random_key}', captcha_str, 600)
     return captcha
 
 

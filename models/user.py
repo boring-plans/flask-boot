@@ -16,6 +16,7 @@ class User(db.Model):
     password = db.Column(db.String(40))
     salt = db.Column(db.String(64))
     is_admin = db.Column(db.Boolean)
+    status = db.Column(db.Boolean, default=True)
     roles = db.relationship('Role', secondary=user_role, backref=db.backref('users'))
 
     def to_vo(self):

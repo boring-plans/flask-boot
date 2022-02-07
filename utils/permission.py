@@ -60,8 +60,8 @@ def permission(permissions):
     """Decorator used to check permissions"""
     def decorator(fn):
         from services.auth import get_all_permissions
-        permissions_owned = get_all_permissions()['permissions']
-        if permissions_owned == 'ALL' or any([p.value in permissions_owned for p in permissions]):
+        permissions_owned = get_all_permissions()
+        if permissions_owned == 'ALL' or any([p in permissions_owned for p in permissions]):
             return fn
         else:
             return lambda *args: make_response('Permission denied', 403)
