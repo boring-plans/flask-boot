@@ -49,7 +49,7 @@ def get_all_permissions():
     permissions = []
     if user:
         if user.is_admin:
-            permissions = 'ALL'
+            permissions = '*'
         else:
             permissions = reduce(lambda pre, curr: [*pre, *curr.permissions.split(',')], user.roles, [])
 
@@ -59,7 +59,7 @@ def get_all_permissions():
 def get_captcha(random_key):
     """Get a random captcha with a random key"""
     captcha_str, captcha = gen_captcha()
-    set_redis_value(f'captcha-key-{random_key}', captcha_str, 600)
+    set_redis_value(f'captcha-key-{random_key}', captcha_str, 120)
     return captcha
 
 

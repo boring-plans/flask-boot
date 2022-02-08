@@ -7,24 +7,26 @@ Created by Kang Tao at 2022/1/12 5:06 PM
 from flask import request, g, make_response
 from utils.encrypt import verify_jwt, gen_jwt
 from datetime import datetime, timedelta
+from functools import wraps
 
 
-def guard_route(app):
-    """Before request"""
+def bind_authentication_checker(app):
+    """Bind authentication checker"""
+
     def is_white(path: str):
-        white_list = ['/auth', '/static']
+        white_list = ['/auth', '/static', '/test']
         for w in white_list:
             if path.startswith(w):
                 return True
         return False
 
-    def before_request():
+    def before_checker():
         app.logger.info('[E]..' + request.path)
         if is_white(request.path):
             app.logger.info('This is a public route.')
             return
         else:
-            token = request.headers.get('Authorization')
+            token = request.headers.get('x-access-token')
             if token:
                 res = verify_jwt(token)
                 if type(res) == str:
@@ -36,10 +38,10 @@ def guard_route(app):
                     g.current_user = res
                     return
             else:
-                app.logger.info('Unauthorized')
+                app.logger.info('Unauthenticated')
                 return make_response('Unauthorized', 401)
 
-    def after_request(response):
+    def after_checker(response):
         """Token updating"""
         app.logger.info('[X]..' + request.path)
         if response.status == 200:
@@ -52,17 +54,34 @@ def guard_route(app):
                 return make_response(response.data, 210)
         return response
 
-    app.before_request(before_request)
-    app.after_request(after_request)
+    app.before_request(before_checker)
+    app.after_request(after_checker)
 
 
-def permission(permissions):
-    """Decorator used to check permissions"""
-    def decorator(fn):
-        from services.auth import get_all_permissions
-        permissions_owned = get_all_permissions()
-        if permissions_owned == 'ALL' or any([p in permissions_owned for p in permissions]):
-            return fn
-        else:
-            return lambda *args: make_response('Permission denied', 403)
-    return decorator
+def require_permission(permission):
+    """Decorator used to check authorization"""
+    def extend_fn(fn):
+        @wraps(fn)
+        def extended(**kwargs):
+            from services.auth import get_all_permissions
+            permissions = get_all_permissions()
+            if permissions == '*' or permission in permissions:
+                return fn(**kwargs)
+            else:
+                return make_response('Permission denied', 403)
+
+        return extended
+
+    return extend_fn
+
+
+def decorator_test(test_list):
+    def extend_fn(fn):
+        def extended(**kwargs):
+            print(kwargs)
+            if not ('user:create' in test_list):
+                return make_response('Permission denied', 403)
+            else:
+                return fn(**kwargs)
+        return extended
+    return extend_fn

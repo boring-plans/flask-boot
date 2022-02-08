@@ -11,8 +11,7 @@ from logging.handlers import TimedRotatingFileHandler
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from utils.common import get_conf, get_env
-from pathlib import Path
-from utils.permission import guard_route
+from utils.permission import bind_authentication_checker
 
 _app = _db = None
 
@@ -32,6 +31,7 @@ def use_app():
         _app.config['SQLALCHEMY_DATABASE_URI'] = conf[f'{get_env()}_uri']
 
         # logging
+        from pathlib import Path
         app_root = Path(__file__).parent
         (app_root / 'static').mkdir(exist_ok=True)
         (app_root / 'logs').mkdir(exist_ok=True)
@@ -44,8 +44,8 @@ def use_app():
             logging.Formatter('%(asctime)s - [%(filename)s:%(lineno)d] - [%(levelname)s] - %(message)s'))
         _app.logger.addHandler(logger_handler)
 
-        # guard
-        guard_route(_app)
+        # authentication checker
+        bind_authentication_checker(_app)
     return _app
 
 
@@ -53,4 +53,5 @@ def use_db():
     global _db
     if _db is None:
         _db = SQLAlchemy(use_app())
+
     return _db

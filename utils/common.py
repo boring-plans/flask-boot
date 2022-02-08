@@ -11,7 +11,7 @@ from pathlib import Path
 
 def get_env():
     """To get environment variable 'ENV'"""
-    return os.environ.get('ENV')
+    return os.environ.get('FLASK_ENV')
 
 
 def get_conf(field=None):

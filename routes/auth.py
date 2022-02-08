@@ -6,7 +6,7 @@ Created by Kang Tao at 2022/1/12 5:05 PM
 """
 from flask import request, Blueprint
 from utils.response import make_response
-from context import use_app
+from flask import current_app as app
 from services import auth as auth_service
 
 blueprint = Blueprint('auth', __name__, url_prefix='/auth')
@@ -46,4 +46,4 @@ def get_permissions():
     return make_response(auth_service.get_all_permissions())
 
 
-use_app().register_blueprint(blueprint)
+app.register_blueprint(blueprint)
