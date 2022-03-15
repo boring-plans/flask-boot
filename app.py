@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
- Expose the instance of flask app,
- which can be run directly or by 'gunicorn'
+Import app from context,
+which can be run directly or by 'gunicorn'
 
-Created by Kang Tao at 2022/1/12 5:06 PM
+Created by Allen Tao at 2022/1/12 5:06 PM
 """
 from context import use_app
 

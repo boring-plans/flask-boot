@@ -14,9 +14,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(40))
     password = db.Column(db.String(40))
-    salt = db.Column(db.String(64))
     is_admin = db.Column(db.Boolean)
-    status = db.Column(db.Boolean, default=True)
+    state = db.Column(db.Integer, default=1)
     roles = db.relationship('Role', secondary=user_role, backref=db.backref('users'))
 
     def to_vo(self):

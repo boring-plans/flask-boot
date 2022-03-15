@@ -2,45 +2,40 @@
 """
 Authorization and Authentication
 
-Created by Kang Tao at 2022/1/18 12:22 PM
+Created by Allen Tao at 2022/1/18 12:22 PM
 """
 from functools import reduce
 from flask import g
 from models.user import User
-from utils.encrypt import gen_jwt, gen_password
-from utils.captcha_util import gen_captcha
-from utils.redis_util import set_redis_value, get_redis_value
+from utils.encrypt import gen_jwt
 from services import user as user_service
 
 
-def sign_up(username, password, captcha_key, captcha):
+def sign_up(username, password):
     """Sign up"""
-    valid = validate_captcha(captcha_key, captcha)
-    if valid:
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return 1, 'User already exists'
+    else:
         user_service.create_one(username, password)
-        _, token = sign_in(username, password, captcha, captcha_key)
+        _, token = sign_in(username, password)
         return 0, token
-    else:
-        return 1, 'Wrong captcha'
 
 
-def sign_in(username, password, captcha_key, captcha):
+def sign_in(username, password):
     """Sign in"""
-    valid = validate_captcha(captcha_key, captcha)
-    if valid:
-        user = User.query.filter_by(username=username).first()
-        if user:
-            if user.status:
-                if gen_password(password, user.salt) == user.password:
-                    return 0, gen_jwt({'id': user.id})
-                else:
-                    return 1, 'Wrong password'
+    user = User.query.filter_by(username=username).first()
+    if user:
+        if user.state == 1:
+            if password == user.password:
+                return 0, gen_jwt({'id': user.id, 'username': username})
             else:
-                return 2, 'User has been frozen'
+                return 1, 'Wrong password'
         else:
-            return 3, 'User not found'
+            # frozen or soft deleted and so on
+            return 2, 'User has been frozen'
     else:
-        return 4, 'Wrong captcha'
+        return 3, 'User not found'
 
 
 def get_all_permissions():
@@ -54,17 +49,4 @@ def get_all_permissions():
             permissions = reduce(lambda pre, curr: [*pre, *curr.permissions.split(',')], user.roles, [])
 
     return permissions
-
-
-def get_captcha(random_key):
-    """Get a random captcha with a random key"""
-    captcha_str, captcha = gen_captcha()
-    set_redis_value(f'captcha-key-{random_key}', captcha_str, 120)
-    return captcha
-
-
-def validate_captcha(random_key, captcha_str):
-    """To validate the captcha_str"""
-    saved_str = get_redis_value(f'captcha-key-{random_key}')
-    return saved_str == captcha_str
 

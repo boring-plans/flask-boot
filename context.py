@@ -3,7 +3,7 @@
 Create and configure instance of Flask and SqlAlchemy,
 which compose a context that whole _app works in
 
-Created by Kang Tao at 2022/1/12 5:06 PM
+Created by Allen Tao at 2022/1/12 5:06 PM
 """
 import logging
 from datetime import datetime
@@ -42,6 +42,7 @@ def use_app():
             delay=False)
         logger_handler.setFormatter(
             logging.Formatter('%(asctime)s - [%(filename)s:%(lineno)d] - [%(levelname)s] - %(message)s'))
+        logger_handler.setLevel(logging.INFO)
         _app.logger.addHandler(logger_handler)
 
         # authentication checker

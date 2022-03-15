@@ -2,7 +2,7 @@
 """
 Used to generate unified response
 
-Created by Kang Tao at 2022/1/12 5:06 PM
+Created by Allen Tao at 2022/1/12 5:06 PM
 """
 from flask import jsonify, Response
 import datetime

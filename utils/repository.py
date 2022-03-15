@@ -2,7 +2,7 @@
 """
 Model Repository
 
-Created by Kang Tao at 2022/1/17 6:48 PM
+Created by Allen Tao at 2022/1/17 6:48 PM
 """
 
 
@@ -26,7 +26,7 @@ def update_one(db, model, one_id, props):
     """Update one"""
     one = model.query.get(one_id)
     for key, value in props.items():
-        one[key] = value
+        setattr(one, key, value)
     db.session.commit()
 
 

@@ -2,7 +2,7 @@
 """
 Functions used to control permissions
 
-Created by Kang Tao at 2022/1/12 5:06 PM
+Created by Allen Tao at 2022/1/12 5:06 PM
 """
 from flask import request, g, make_response
 from utils.encrypt import verify_jwt, gen_jwt
@@ -14,7 +14,7 @@ def bind_authentication_checker(app):
     """Bind authentication checker"""
 
     def is_white(path: str):
-        white_list = ['/auth', '/static', '/test']
+        white_list = ['/auth', '/static']
         for w in white_list:
             if path.startswith(w):
                 return True
@@ -22,24 +22,23 @@ def bind_authentication_checker(app):
 
     def before_checker():
         app.logger.info('[E]..' + request.path)
-        if is_white(request.path):
+        token = request.headers.get('x-access-token')
+        if token:
+            res = verify_jwt(token)
+            if type(res) == str:
+                app.logger.info('Invalid token' + res)
+                return make_response(res, 400)
+            else:
+                app.logger.info('current_user:')
+                app.logger.info(res)
+                g.current_user = res
+                return
+        elif is_white(request.path):
             app.logger.info('This is a public route.')
             return
         else:
-            token = request.headers.get('x-access-token')
-            if token:
-                res = verify_jwt(token)
-                if type(res) == str:
-                    app.logger.info('Invalid token' + res)
-                    return make_response(res, 400)
-                else:
-                    app.logger.info('current_user:')
-                    app.logger.info(res)
-                    g.current_user = res
-                    return
-            else:
-                app.logger.info('Unauthenticated')
-                return make_response('Unauthorized', 401)
+            app.logger.info('Unauthenticated')
+            return make_response('Unauthenticated', 401)
 
     def after_checker(response):
         """Token updating"""
@@ -72,16 +71,4 @@ def require_permission(permission):
 
         return extended
 
-    return extend_fn
-
-
-def decorator_test(test_list):
-    def extend_fn(fn):
-        def extended(**kwargs):
-            print(kwargs)
-            if not ('user:create' in test_list):
-                return make_response('Permission denied', 403)
-            else:
-                return fn(**kwargs)
-        return extended
     return extend_fn

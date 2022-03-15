@@ -2,7 +2,7 @@
 """
 Funcs for common use
 
-Created by Kang Tao at 2022/1/13 11:57 AM
+Created by Allen Tao at 2022/1/13 11:57 AM
 """
 import os
 import configparser
