@@ -24,3 +24,8 @@ if __name__ == '__main__':
 
     from utils.common import get_env
     (get_env() == 'dev') and app.run()
+else:
+    # when deploying with gunicorn, bind app's logger with gunicorn's
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
